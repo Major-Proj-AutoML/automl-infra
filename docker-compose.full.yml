@@ -1,0 +1,130 @@
+# Full stack: infra + all AutoML services + workers.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.full.yml up -d
+#
+# This layers the services on top of the base infra file. Each service's context
+# is its sibling directory (../automl-*).
+
+services:
+  data-service:
+    build:
+      context: ../automl-data-service
+      dockerfile: Dockerfile
+    container_name: automl-data-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      DATA_ROOT: /data
+    ports:
+      - "8001:8001"
+    volumes:
+      - automl_data:/data
+    networks:
+      - automl-net
+
+  metafeatures-service:
+    build:
+      context: ../automl-metafeatures-service
+      dockerfile: Dockerfile
+    container_name: automl-metafeatures-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      data-service:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      DATA_SERVICE_URL: http://data-service:8001
+    ports:
+      - "8002:8002"
+    volumes:
+      - automl_data:/data
+    networks:
+      - automl-net
+
+  generation-service:
+    build:
+      context: ../automl-generation-service
+      dockerfile: Dockerfile
+    container_name: automl-generation-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      data-service:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      REDIS_URL: redis://redis:6379/0
+      DATA_SERVICE_URL: http://data-service:8001
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+    ports:
+      - "8003:8003"
+    volumes:
+      - automl_data:/data
+    networks:
+      - automl-net
+
+  generation-worker:
+    build:
+      context: ../automl-generation-service
+      dockerfile: Dockerfile.worker
+    container_name: automl-generation-worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      data-service:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      REDIS_URL: redis://redis:6379/0
+      DATA_SERVICE_URL: http://data-service:8001
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+    volumes:
+      - automl_data:/data
+    networks:
+      - automl-net
+
+  analysis-service:
+    build:
+      context: ../automl-analysis-service
+      dockerfile: Dockerfile
+    container_name: automl-analysis-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+    ports:
+      - "8004:8004"
+    networks:
+      - automl-net
+
+  gateway:
+    build:
+      context: ../automl-gateway
+      dockerfile: Dockerfile
+    container_name: automl-gateway
+    depends_on:
+      - data-service
+      - metafeatures-service
+      - generation-service
+      - analysis-service
+    environment:
+      DATA_SERVICE_URL: http://data-service:8001
+      METAFEATURES_SERVICE_URL: http://metafeatures-service:8002
+      GENERATION_SERVICE_URL: http://generation-service:8003
+      ANALYSIS_SERVICE_URL: http://analysis-service:8004
+    ports:
+      - "8000:8000"
+    networks:
+      - automl-net
+
+volumes:
+  automl_data:

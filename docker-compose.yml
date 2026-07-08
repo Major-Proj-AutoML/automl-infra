@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: automl-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-automl}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-automl_dev_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-automl}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-automl} -d ${POSTGRES_DB:-automl}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - automl-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: automl-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - automl-net
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  automl-net:
+    name: automl-net
+    driver: bridge
