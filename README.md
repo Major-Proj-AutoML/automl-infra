@@ -139,7 +139,24 @@ If you want to test a backend service directly (bypassing the gateway), also imp
 
 Grab any CSV you have that's suitable for supervised ML. The examples below assume a regression dataset, but everything works for `binary_classification` and `multiclass_classification` too.
 
+### Base URL reference
+
+**All requests below go through the gateway at `http://localhost:8000`.** The gateway re-exposes every backend endpoint under the same path and adds two composed workflows on top. You can also hit any backend directly if you want to bypass the gateway (e.g. for isolating a service during debug):
+
+| Endpoint prefix | Via gateway (default in examples) | Direct to backend |
+|---|---|---|
+| `/health` | `http://localhost:8000/health` | each service also has its own `/health` on `:8001`–`:8004` |
+| `/datasets/**` | `http://localhost:8000/datasets/**` | `http://localhost:8001/datasets/**` (data-service) |
+| `/meta-features/**` | `http://localhost:8000/meta-features/**` | `http://localhost:8002/meta-features/**` (metafeatures-service) |
+| `/runs/**`, `/sweeps/**` | `http://localhost:8000/runs/**` | `http://localhost:8003/runs/**` (generation-service) |
+| `/analysis/**` | `http://localhost:8000/analysis/**` | `http://localhost:8004/analysis/**` (analysis-service) |
+| `/workflows/**` | `http://localhost:8000/workflows/**` | **gateway-only** — no backend equivalent |
+
+Tip in Postman: set a **collection variable** `base_url = http://localhost:8000` and reference it as `{{base_url}}/health` etc. Then a single edit switches every request between gateway and a backend service.
+
 ### Test 1 — Health
+
+**Request:** `GET http://localhost:8000/health`
 
 Postman → `automl-gateway` collection → **GET /health** → **Send**.
 
@@ -151,7 +168,7 @@ Expected: 200 OK, JSON with all four upstreams `true`.
 
 This is the safest first test: no Ollama involvement, deterministic result in ~1 s.
 
-**Endpoint:** `POST /workflows/upload-and-extract`
+**Request:** `POST http://localhost:8000/workflows/upload-and-extract` (gateway-only workflow)
 
 In Postman, click the request → **Body** tab → select **form-data**. Fill in:
 
@@ -189,7 +206,7 @@ Hit **Send**. Expected response:
 
 ### Test 3 — Full end-to-end run (LLM generates code, executes, scores)
 
-**Endpoint:** `POST /workflows/full-run`
+**Request:** `POST http://localhost:8000/workflows/full-run` (gateway-only workflow)
 
 Same body as Test 2, plus these extra fields:
 
@@ -220,7 +237,8 @@ The run is queued — the worker takes 20–60 s depending on the model + datase
 
 ### Test 4 — Poll for the run's result
 
-**Endpoint:** `GET /runs?dataset_id=<id>&limit=1`
+**Request:** `GET http://localhost:8000/runs?dataset_id=<id>&limit=1`
+_(direct alternative: `GET http://localhost:8003/runs?dataset_id=<id>&limit=1` — same data, hits generation-service directly)_
 
 In Postman, set `dataset_id` (Params tab) to whatever ID Test 3 returned. Send.
 
@@ -237,16 +255,18 @@ Score interpretation:
 
 ### Test 5 — Analytics endpoints
 
-Once you have at least one completed run:
+Once you have at least one completed run. All of these are served by the **analysis-service** (`:8004`), re-exposed through the gateway:
 
 | Postman request | What it tells you |
 |---|---|
-| `GET /analysis/summary` | Mean test-score per (condition, model), plus failure counts |
-| `GET /analysis/errors` | Distribution of error categories (`missing_name`, `import_error`, etc.) |
-| `GET /analysis/iterations` | Average iterations used per condition — does B2 reduce retries? |
-| `GET /analysis/models` | Per-backend comparison |
-| `GET /analysis/size-stratified` | Small vs medium vs large dataset breakdown |
-| `GET /analysis/wilcoxon?a=B0&b=B2` | Statistical significance test: is B2 better than B0? |
+| `GET http://localhost:8000/analysis/summary` | Mean test-score per (condition, model), plus failure counts |
+| `GET http://localhost:8000/analysis/errors` | Distribution of error categories (`missing_name`, `import_error`, etc.) |
+| `GET http://localhost:8000/analysis/iterations` | Average iterations used per condition — does B2 reduce retries? |
+| `GET http://localhost:8000/analysis/models` | Per-backend comparison |
+| `GET http://localhost:8000/analysis/size-stratified` | Small vs medium vs large dataset breakdown |
+| `GET http://localhost:8000/analysis/wilcoxon?a=B0&b=B2` | Statistical significance test: is B2 better than B0? |
+
+_Direct-to-service equivalents: replace `http://localhost:8000` with `http://localhost:8004` in any row above._
 
 Compare `b0_naive` vs `b2_metafeature` for the same dataset+model+seed to see the meta-feature effect.
 
