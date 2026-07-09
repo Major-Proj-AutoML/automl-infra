@@ -18,10 +18,12 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
       DATA_ROOT: /data
+      PYTHONPATH: /opt/automl-reusables
     ports:
       - "8001:8001"
     volumes:
       - automl_data:/data
+      - ../automl-reusables:/opt/automl-reusables
     networks:
       - automl-net
 
@@ -38,10 +40,12 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
       DATA_SERVICE_URL: http://data-service:8001
+      PYTHONPATH: /opt/automl-reusables
     ports:
       - "8002:8002"
     volumes:
       - automl_data:/data
+      - ../automl-reusables:/opt/automl-reusables
     networks:
       - automl-net
 
@@ -62,10 +66,12 @@ services:
       REDIS_URL: redis://redis:6379/0
       DATA_SERVICE_URL: http://data-service:8001
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      PYTHONPATH: /opt/automl-reusables
     ports:
       - "8003:8003"
     volumes:
       - automl_data:/data
+      - ../automl-reusables:/opt/automl-reusables
     networks:
       - automl-net
 
@@ -86,8 +92,10 @@ services:
       REDIS_URL: redis://redis:6379/0
       DATA_SERVICE_URL: http://data-service:8001
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      PYTHONPATH: /opt/automl-reusables
     volumes:
       - automl_data:/data
+      - ../automl-reusables:/opt/automl-reusables
     networks:
       - automl-net
 
@@ -101,8 +109,11 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      PYTHONPATH: /opt/automl-reusables
     ports:
       - "8004:8004"
+    volumes:
+      - ../automl-reusables:/opt/automl-reusables
     networks:
       - automl-net
 
