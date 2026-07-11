@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS run_results (
     max_iterations          INTEGER,
     runtime_seconds         DOUBLE PRECISION,
     generated_code_path     TEXT,
+    -- B2 structured reasoning: the LLM's decision list (as parsed) and the
+    -- mechanical audit against meta-features + code AST. NULL for B0/B1
+    -- runs and for B2 runs where extraction/verification failed.
+    reasoning_trace         JSONB,
+    verification_report     JSONB,
     created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
