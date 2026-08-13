@@ -17,6 +17,8 @@ Seven repos under [Major-Proj-AutoML](https://github.com/Major-Proj-AutoML) work
 | `automl-generation-service` | Async LLM code generation (RQ + Ollama) | `automl-generation-service` + `-worker` | `:8003` | `/docs` |
 | `automl-analysis-service` | RQ1–RQ5 analytics over completed runs | `automl-analysis-service` | `:8004` | `/docs` |
 | `automl-gateway` | Single entry point + composed workflows | `automl-gateway` | `:8000` | `/docs` |
+| `automl-frontend` | Streamlit UI (upload CSV, run pipeline, download artifacts) | `automl-frontend` | `:8501` | — |
+| `automl-openui` | OpenUI-based alternative frontend | `automl-frontend-openui` | `:3000` | — |
 
 Plus infra:
 
@@ -24,6 +26,9 @@ Plus infra:
 |---|---|---|---|
 | Postgres 16 | `Auto-ML-Postgres` | `:5433` | `:5432` |
 | Redis 7 | `Auto-ML-Redis` | `:6380` | `:6379` |
+| MinIO | `Auto-ML-MinIO` | `:9000` (S3 API), `:9001` (console) | `:9000` / `:9001` |
+
+MinIO stores the generated pipeline scripts and trained `model.joblib` artifacts. Buckets (`scripts`, `models`) are auto-created by the `Auto-ML-MinIO-Init` one-shot container on first boot. Console: `http://localhost:9001` (default creds `automl` / `automl_dev_pw`, override via `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` in `.env`).
 
 > The stack uses non-standard host ports (`5433`, `6380`) so it can coexist with any other Postgres/Redis containers you may already run. Inside the docker network the services still talk to `postgres:5432` and `redis:6379`.
 
@@ -304,7 +309,7 @@ docker logs -f automl-generation-worker
 | Full wipe (destroys DB + Redis + uploaded CSVs) | `docker compose -f docker-compose.yml -f docker-compose.full.yml down -v` |
 | Rebuild after Dockerfile change | `docker compose -f docker-compose.yml -f docker-compose.full.yml up -d --build` |
 
-Service names (for `restart`): `postgres`, `redis`, `data-service`, `metafeatures-service`, `generation-service`, `generation-worker`, `analysis-service`, `gateway`.
+Service names (for `restart`): `postgres`, `redis`, `minio`, `minio-init`, `data-service`, `metafeatures-service`, `generation-service`, `generation-worker`, `analysis-service`, `gateway`, `frontend`, `frontend-openui`.
 
 ---
 
