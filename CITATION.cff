@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "AutoML: LLM-driven ML pipeline generation conditioned on dataset meta-features"
+# TODO: replace the title above with your final project title if different.
+type: software
+authors:
+  - given-names: "Samarth Ganesh"
+    family-names: Adsare
+    orcid: "https://orcid.org/0009-0006-4730-4839"
+    affiliation: "Vivekanand Education Society's Institute of Technology (VESIT)"
+  - given-names: "Kinnshuk Arup"
+    family-names: Bhaduri
+    orcid: "https://orcid.org/0009-0007-6370-1815"
+    affiliation: "Vivekanand Education Society's Institute of Technology (VESIT)"
+  - given-names: "Sarvesh Sunil"
+    family-names: Rakte
+    orcid: "https://orcid.org/0009-0007-9465-1355"
+    affiliation: "Vivekanand Education Society's Institute of Technology (VESIT)"
+  - given-names: "Ojas Milind"
+    family-names: Godambe
+    orcid: "https://orcid.org/0009-0008-0576-5084"
+    affiliation: "Vivekanand Education Society's Institute of Technology (VESIT)"
+license:
+  - MIT
+  - Apache-2.0
+repository-code: "https://github.com/Major-Proj-AutoML/automl-infra"
+url: "https://github.com/Major-Proj-AutoML"
+# TODO: after the first GitHub release is archived on Zenodo, add the DOI block:
+# doi: "10.5281/zenodo.XXXXXXX"
+# version: "0.1.0"
+# date-released: "2026-XX-XX"

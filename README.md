@@ -339,3 +339,20 @@ Service names (for `restart`): `postgres`, `redis`, `minio`, `minio-init`, `data
 The 5 app services bind-mount `../automl-reusables` into `/opt/automl-reusables` and set `PYTHONPATH=/opt/automl-reusables`. This means you can edit reusables' source files on your host and restart a single service (`docker compose restart generation-worker`) to pick up the change — no rebuild.
 
 The `gateway` service does not import `src` and does not receive that mount.
+
+## License
+
+Dual-licensed under either of
+
+- Apache License 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+- MIT license ([LICENSE-MIT](LICENSE-MIT))
+
+at your option. Unless you explicitly state otherwise, any contribution you
+intentionally submit for inclusion in this work shall be dual-licensed as
+above, without any additional terms or conditions.
+
+## Citing
+
+This repository is the canonical citation home for the VESIT AutoML project.
+See [`CITATION.cff`](CITATION.cff) for author and version metadata. A citable
+DOI will be added here once the first release is archived on Zenodo.
