@@ -20,9 +20,9 @@ authors:
     family-names: Godambe
     orcid: "https://orcid.org/0009-0008-0576-5084"
     affiliation: "Vivekanand Education Society's Institute of Technology (VESIT)"
-license:
-  - MIT
-  - Apache-2.0
+# Zenodo accepts only a single SPDX license id in this field; the code is
+# dual-licensed MIT OR Apache-2.0 (see LICENSE-MIT and LICENSE-APACHE).
+license: Apache-2.0
 repository-code: "https://github.com/Major-Proj-AutoML/automl-infra"
 url: "https://github.com/Major-Proj-AutoML"
 # TODO: after the first GitHub release is archived on Zenodo, add the DOI block:
