@@ -1,5 +1,7 @@
 # AutoML Stack — team onboarding & API testing guide
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23543993.svg)](https://doi.org/10.5281/zenodo.23543993)
+
 This repo (`automl-infra`) orchestrates six sibling microservices that together make up the AutoML research stack. If you're a teammate who just wants to bring the stack up on your laptop and hit the APIs from Postman, **you're in the right place — read this doc top to bottom**.
 
 ---
@@ -353,6 +355,11 @@ above, without any additional terms or conditions.
 
 ## Citing
 
-This repository is the canonical citation home for the VESIT AutoML project.
-See [`CITATION.cff`](CITATION.cff) for author and version metadata. A citable
-DOI will be added here once the first release is archived on Zenodo.
+This repository is the canonical citation home for the VESIT AutoML project,
+archived on Zenodo with a permanent DOI:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23543993.svg)](https://doi.org/10.5281/zenodo.23543993)
+
+The **concept DOI** `10.5281/zenodo.23543993` always resolves to the latest
+version. See [`CITATION.cff`](CITATION.cff) for full author and version
+metadata, or use GitHub's **Cite this repository** button.

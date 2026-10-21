@@ -25,7 +25,6 @@ authors:
 license: Apache-2.0
 repository-code: "https://github.com/Major-Proj-AutoML/automl-infra"
 url: "https://github.com/Major-Proj-AutoML"
-# TODO: after the first GitHub release is archived on Zenodo, add the DOI block:
-# doi: "10.5281/zenodo.XXXXXXX"
-# version: "0.1.0"
-# date-released: "2026-XX-XX"
+doi: "10.5281/zenodo.23543993"
+version: "0.1.1"
+date-released: "2026-10-22"
