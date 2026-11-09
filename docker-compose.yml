@@ -36,52 +36,63 @@ services:
     networks:
       - automl-net
 
-  minio:
-    image: minio/minio:latest
-    container_name: Auto-ML-MinIO
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-automl}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-automl_dev_pw}
-    ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks:
-      - automl-net
-
-  minio-init:
-    image: minio/mc:latest
-    container_name: Auto-ML-MinIO-Init
-    depends_on:
-      minio:
-        condition: service_healthy
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-automl}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-automl_dev_pw}
-      MINIO_SCRIPTS_BUCKET: ${MINIO_SCRIPTS_BUCKET:-scripts}
-      MINIO_MODELS_BUCKET: ${MINIO_MODELS_BUCKET:-models}
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
-      mc mb -p local/$$MINIO_SCRIPTS_BUCKET &&
-      mc mb -p local/$$MINIO_MODELS_BUCKET &&
-      exit 0
-      "
-    networks:
-      - automl-net
+  # --- MinIO (optional, DISABLED) --------------------------------------------
+  # MinIO withdrew public access to its `minio/minio` and `minio/mc` images from
+  # both Docker Hub and quay.io (anonymous pulls now fail for every tag), which
+  # is what caused "pull access denied for minio/mc". The stack does not need
+  # MinIO: artifact upload is best-effort and no-ops when MINIO_ENDPOINT is empty
+  # (set that way in docker-compose.full.yml), and run results live in Postgres.
+  #
+  # To re-enable (e.g. with images from a mirror you trust, or after `docker
+  # login`), uncomment this block, restore `minio_data:` under volumes, and set
+  # MINIO_ENDPOINT: minio:9000 for generation-service + generation-worker.
+  #
+  # minio:
+  #   image: minio/minio:latest
+  #   container_name: Auto-ML-MinIO
+  #   restart: unless-stopped
+  #   command: server /data --console-address ":9001"
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER:-automl}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-automl_dev_pw}
+  #   ports:
+  #     - "${MINIO_PORT:-9000}:9000"
+  #     - "${MINIO_CONSOLE_PORT:-9001}:9001"
+  #   volumes:
+  #     - minio_data:/data
+  #   healthcheck:
+  #     test: ["CMD", "mc", "ready", "local"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #   networks:
+  #     - automl-net
+  #
+  # minio-init:
+  #   image: minio/mc:latest
+  #   container_name: Auto-ML-MinIO-Init
+  #   depends_on:
+  #     minio:
+  #       condition: service_healthy
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER:-automl}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-automl_dev_pw}
+  #     MINIO_SCRIPTS_BUCKET: ${MINIO_SCRIPTS_BUCKET:-scripts}
+  #     MINIO_MODELS_BUCKET: ${MINIO_MODELS_BUCKET:-models}
+  #   entrypoint: >
+  #     /bin/sh -c "
+  #     mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+  #     mc mb -p local/$$MINIO_SCRIPTS_BUCKET &&
+  #     mc mb -p local/$$MINIO_MODELS_BUCKET &&
+  #     exit 0
+  #     "
+  #   networks:
+  #     - automl-net
 
 volumes:
   postgres_data:
   redis_data:
-  minio_data:
+  # minio_data:   # re-enable together with the MinIO services above
 
 networks:
   automl-net:

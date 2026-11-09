@@ -16,7 +16,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
       DATA_ROOT: /data
       PYTHONPATH: /opt/automl-reusables
     ports:
@@ -38,7 +38,7 @@ services:
       data-service:
         condition: service_started
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
       DATA_SERVICE_URL: http://data-service:8001
       PYTHONPATH: /opt/automl-reusables
     ports:
@@ -59,16 +59,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      minio:
-        condition: service_healthy
       data-service:
         condition: service_started
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
       REDIS_URL: redis://redis:6379/0
       DATA_SERVICE_URL: http://data-service:8001
+      # LLM provider: OpenRouter is the default; Ollama (OLLAMA_URL) is the fallback.
+      LLM_PROVIDER: ${LLM_PROVIDER:-openrouter}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPEN_ROUTER_API_KEY: ${OPEN_ROUTER_API_KEY:-}
+      OPENROUTER_URL: ${OPENROUTER_URL:-https://openrouter.ai/api/v1}
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
-      MINIO_ENDPOINT: minio:9000
+      # MinIO is disabled (its images are no longer publicly pullable). An empty
+      # endpoint makes artifact uploads no-op; run results still go to Postgres.
+      # Re-enable: restore the minio service in docker-compose.yml, set minio:9000.
+      MINIO_ENDPOINT: ""
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-automl}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-automl_dev_pw}
       MINIO_SECURE: "false"
@@ -93,16 +99,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      minio:
-        condition: service_healthy
       data-service:
         condition: service_started
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
       REDIS_URL: redis://redis:6379/0
       DATA_SERVICE_URL: http://data-service:8001
+      # LLM provider: OpenRouter is the default; Ollama (OLLAMA_URL) is the fallback.
+      LLM_PROVIDER: ${LLM_PROVIDER:-openrouter}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPEN_ROUTER_API_KEY: ${OPEN_ROUTER_API_KEY:-}
+      OPENROUTER_URL: ${OPENROUTER_URL:-https://openrouter.ai/api/v1}
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
-      MINIO_ENDPOINT: minio:9000
+      # MinIO is disabled (its images are no longer publicly pullable). An empty
+      # endpoint makes artifact uploads no-op; run results still go to Postgres.
+      # Re-enable: restore the minio service in docker-compose.yml, set minio:9000.
+      MINIO_ENDPOINT: ""
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-automl}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-automl_dev_pw}
       MINIO_SECURE: "false"
@@ -124,7 +136,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-automl}:${POSTGRES_PASSWORD:-automl_dev_pw}@postgres:5432/${POSTGRES_DB:-automl}
       PYTHONPATH: /opt/automl-reusables
     ports:
       - "8004:8004"
@@ -155,7 +167,7 @@ services:
 
   frontend:
     build:
-      context: ../automl-frontend
+      context: ../automl-streamlit
       dockerfile: Dockerfile
     container_name: automl-frontend
     depends_on:
